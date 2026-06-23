@@ -1,0 +1,9 @@
+model Comments {
+    id       String @id @default(uuid())
+    content  String
+    authorId String
+    user     User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+    postId String
+    post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
