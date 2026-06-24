@@ -1,38 +1,59 @@
-import { Request, Response } from "express";
-
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import httpStatus from "http-status"
-import { prisma } from "../../lib/prisma";
 import { userService } from "./user.service";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
 
-const registerUser = async (req: Request, res: Response) => {
 
-    try {
 
-        const result = await userService.registerUserIntoDb(req.body)
 
-        res.status(httpStatus.CREATED).json(
-            {
-                success: true,
-                statusCode: httpStatus.CREATED,
-                message: "User Created Successfully",
-                data: { result }
-            }
-        )
+const registerUser = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+        const user = await userService.registerUserIntoDb(req.body)
+        /*  res.status(httpStatus.CREATED).json(
+             {
+                 success: true,
+                 statusCode: httpStatus.CREATED,
+                 message: "User Created Successfully",
+                 data: { result }
+             }
+         ) */
 
-    } catch (error: any) {
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json(
-            {
-                success: false,
-                statuCode: httpStatus.INTERNAL_SERVER_ERROR,
-                message: "Failed to register user",
-                error: error.message
-            }
-        )
+        sendResponse(res, {
+            success: true,
+            statusCode: httpStatus.CREATED,
+            message: "User registered successfully",
+            data: { user }
+        })
     }
+)
 
-}
+const getMyProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.user?.id);
+    const profile = await userService.getMyProfileFromDb(req.user?.id as string)
 
 
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "User registered successfully",
+        data: { profile }
+    })
+})
+
+const updatedMyProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) =>{
+    const userId = req.user?.id as string;
+    const payload = req.body;
+    const updateProfile = await userService.updateMyProfileInDb(userId, payload)
+    sendResponse(res,{
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"user profile updated successfully",
+        data:{updateProfile}
+    })
+})
 export const userController = {
-    registerUser
+    registerUser,
+    getMyProfile,
+    updatedMyProfile
 }
