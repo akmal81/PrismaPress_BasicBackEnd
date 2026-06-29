@@ -298,7 +298,7 @@ prisma/
 2. Write all prisma models and enums
 
     a. /user.prisma
-    ```prisma
+```prisma
     model User {
     id           String       @id @default(ulid())
     name         String       @db.VarChar(255)
@@ -313,7 +313,7 @@ prisma/
 
     @@map("users")
 }
-    ```
+```
 
     b. /profile.prisma
 

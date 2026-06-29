@@ -6,11 +6,11 @@ model User {
     activeStatus ActiveStatus @default(ACTIVE)
     role         Role         @default(USER)
     createdAt    DateTime     @default(now())
-    updatedAt    DateTime     @default(now())
+    updatedAt    DateTime     @updatedAt
 
-    profile Profile?
-    post Post[]
-    comments Comments[]
+    profile  Profile?
+    post     Post[]
+    comments Comment[]
 
     @@map("users")
 }

@@ -29,7 +29,7 @@ const registerUser = catchAsync(
 )
 
 const getMyProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.user?.id);
+  
     const profile = await userService.getMyProfileFromDb(req.user?.id as string)
 
 

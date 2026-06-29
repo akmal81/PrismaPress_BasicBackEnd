@@ -115,6 +115,7 @@ page:number;
 limit:number;
 total:number;
 }
+
 type TResponseData<T>={
     success:boolean;
     statusCode:number;

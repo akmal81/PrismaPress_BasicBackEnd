@@ -23,9 +23,6 @@ declare global {
 
 export const auth = (...requiredRoles:Role[])=>{
     return catchAsync(async (req:Request, res:Response, next:NextFunction) => {
-
-
-
         const token = req.cookies.accessToken ?  
         req.cookies.accessToken 
         :
@@ -48,7 +45,7 @@ export const auth = (...requiredRoles:Role[])=>{
         }
 
         const {email, name, id, role} = verifiedToken.data as JwtPayload;
-
+console.log(requiredRoles);
         if(requiredRoles.length && !requiredRoles.includes(role)){
             throw new Error("Forbidden. You don't have permission to access this resource.");
             
@@ -81,6 +78,5 @@ export const auth = (...requiredRoles:Role[])=>{
         }
         
         next()
-
     })
 }
