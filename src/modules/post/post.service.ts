@@ -1,7 +1,8 @@
 import { Result } from "pg"
 import { prisma } from "../../lib/prisma"
-import { ICreatePostPayload, IUpdatePostload } from "./post.interface"
+import { ICreatePostPayload, IPostQuery, IUpdatePostload } from "./post.interface"
 import { CommentStatus, PostStatus } from "../../../generated/prisma/enums"
+import { PostWhereInput } from "../../../generated/prisma/models"
 
 const createPostIntoDb = async (payload: ICreatePostPayload, userId: string) => {
 
@@ -18,9 +19,128 @@ const createPostIntoDb = async (payload: ICreatePostPayload, userId: string) => 
 
 
 
-const getAllPostFromDb = async () => {
+const getAllPostFromDb = async (query: IPostQuery) => {
+
+    const limit = query.limit ? Number(query.limit) : 10;
+    const page = query.page ? Number(query.page) : 1;
+    const skip = (page-1)*limit;
+    const sortBy  = query.sortBy ? query.sortBy : "createdAt";
+    const sortOrder  = query.sortOrder ? query.sortOrder : "desc";
+
+    const tags = query.tags ? JSON.parse(query.tags as string) : null;
+    const tagsArray = Array.isArray(tags)? tags:[]
+
+
+    const andConditions : PostWhereInput[] = []
+
+// partial query
+    if(query.searchTerm){
+        andConditions.push({
+            OR:[
+                {
+                    title:{
+                        contains:query.searchTerm,
+                        mode:"insensitive"
+                    }
+                },
+                {
+                    content :{
+                        contains:query.searchTerm,
+                        mode:"insensitive"
+                    }
+                }
+            ]
+        })
+    };
+
+// exact query
+    if(query.title){
+        andConditions.push({
+            title:query.title
+        })
+    }
+
+    if(query.content){
+        andConditions.push({
+            title:query.content
+        })
+    }
+
+    if(query.authorId){
+        andConditions.push({
+            authorId : query.authorId
+        })
+    }
+
+    if(query.isFeatured) { 
+        andConditions.push({
+            isFeatured: Boolean(query.isFeatured)
+        })
+    }
+
+    if(query.tags){
+        andConditions.push({
+            tags:{
+                hasSome:tagsArray
+            }
+        })
+    }
+
+    if(query.status){
+        andConditions.push({
+            status:query.status
+        })
+    }
+
+    // andConditions.push({
+    //     isPremium : false
+    // })
+
+
+
     const allPost = await prisma.post.findMany(
         {
+            where: {
+                // AND: [
+                //     // query.searchTerm ? {} :{},
+                //     query.searchTerm ? {
+                //         OR: [
+                //             {
+                //                 title: {
+                //                     contains: query.searchTerm,
+                //                     mode: "insensitive"
+                //                 },
+                //             },
+                //             {
+                //                 content: {
+                //                     contains: query.searchTerm,
+                //                     mode: "insensitive"
+                //                 }
+                //             }
+                //         ]
+                //     } : {},
+
+                //     // title filtering
+                //     query.title ? { title: query.title } : {},
+                //     // title:" "
+                //     // content filtering
+                //     query.content ? { content: query.content } : {}
+                // ]
+                AND:andConditions
+            },
+
+            // paginition 
+
+            take:limit,
+            skip:skip,
+
+            orderBy:{
+                // sortBy : sortOrder
+                // column : "asc/desc"
+                [sortBy] : sortOrder
+            },
+
+
             include: {
                 author: {
                     omit: {
@@ -69,7 +189,7 @@ const getPostStatsFromDb = async () => {
                 totalCount,
                 totalApprovedComments,
                 totalRejectComments,
-                totalViews:totalPostsViewsAgg._sum.views
+                totalViews: totalPostsViewsAgg._sum.views
             }
 
         }

@@ -11,6 +11,7 @@ model User {
     profile  Profile?
     post     Post[]
     comments Comment[]
+    subscription Subscription?
 
     @@map("users")
 }

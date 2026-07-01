@@ -3,7 +3,8 @@ import { catchAsync } from "../../utils/catchAsync"
 import { postService } from "./post.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from 'http-status'
-import { userService } from "../user/user.service";
+
+
 
 
 
@@ -25,9 +26,13 @@ const createPost = catchAsync(
 
 
 
+
 const getAllPost = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
-        const result = await postService.getAllPostFromDb()
+
+        const query = req.query;
+        console.log(query);
+        const result = await postService.getAllPostFromDb(query)
 
         sendResponse(res, {
             success: true,
@@ -42,7 +47,7 @@ const getAllPost = catchAsync(
 const getPostStats = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
         const result = await postService.getPostStatsFromDb();
-         sendResponse(res, {
+        sendResponse(res, {
             success: true,
             statusCode: httpStatus.OK,
             message: "Stats Retrive Successfully!!",
@@ -111,12 +116,12 @@ const updatePost = catchAsync(
 
 const deletePost = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
- const authorId = req.user?.id as string;
+        const authorId = req.user?.id as string;
         const isAdmin = req.user?.role === "ADMIN";
         const postId = req.params.postId as string;
-        if(!postId){
+        if (!postId) {
             throw new Error("Please provide postId");
-            
+
         }
 
         const result = await postService.deletePostFromdb(postId, authorId, isAdmin)
